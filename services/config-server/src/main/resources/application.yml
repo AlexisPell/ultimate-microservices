@@ -1,0 +1,15 @@
+spring:
+  profiles:
+    active: native
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        native:
+          # Sets path to ./configurations where all the microservice configs are stored
+          search-locations: classpath:/configurations
+
+server:
+  port: 8888
+

@@ -1,0 +1,7 @@
+spring:
+  config:
+    import:
+      optional:configserver:http://localhost:8888
+  application:
+    name: discovery-service # must match with config-server/src/main/resources/configurations/{name}.yml
+

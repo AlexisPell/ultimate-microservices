@@ -1,0 +1,96 @@
+name: my_ultimate_microservices
+
+services:
+  lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: lgtm
+    restart: unless-stopped
+    ports:
+      # Grafana v11.5.2
+      # Prometheus v3.2.0
+      # OpenTelemetry Collector v0.120.0
+      # Tempo v2.7.1
+      # Loki v3.4.2
+      - "3000:3000"   # Grafana UI
+      - "4317:4317"   # OpenTelemetry gRPC receiver
+      - "4318:4318"   # OpenTelemetry HTTP receiver
+      - "9090:9090"   # Mimir (Prometheus-compatible API)
+      - "3100:3100"   # Loki (logs API)
+      - "3200:3200"   # Tempo (tracing API)
+    environment:
+      - "GF_SECURITY_ADMIN_PASSWORD=admin"
+      - "OTEL_RESOURCE_ATTRIBUTES=service.name=otel-lgtm"
+    volumes:
+      - lgtm_data:/var/lib/grafana
+    networks:
+      microservices-net:
+
+  mongo:
+    container_name: my_mongo
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - my_mongo_volume:/data
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: password
+
+
+  mail-dev:
+    container_name: my_mail_dev
+    image: maildev/maildev
+    ports:
+      - 1080:1080
+      - 1025:1025
+
+  postgres:
+    image: postgres:16.3
+    container_name: my_postgres
+    environment:
+#      POSTGRES_DB: db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - my_pg_volume:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      microservices-net:
+    restart: unless-stopped
+
+#  mongo-express:
+#    container_name: my_mongo_express
+#    image: mongo-express
+#    restart: on-failure
+#    ports:
+#      - 8081:8081
+#    environment:
+#      ME_CONFIG_MONGODB_AUTH_USERNAME: user
+#      ME_CONFIG_MONGODB_AUTH_PASSWORD: password
+
+#  pg_admin:
+#    container_name: my_pg_admin
+#    image: dpage/pgadmin4
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin@pgadmin.org}
+#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+#      PGADMIN_CONFIG_SERVER_MODE: 'False'
+#    volumes:
+#      - my_pgadmin_volume:/var/lib/pgadmin
+#    ports:
+#      - 5050:80
+#    networks:
+#      microservices-net:
+#    restart: unless-stopped
+
+networks:
+  microservices-net:
+    driver: bridge
+
+volumes:
+  lgtm_data:
+  my_pg_volume:
+  my_pgadmin_volume:
+  my_mongo_volume:
+
