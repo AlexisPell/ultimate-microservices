@@ -1,7 +1,7 @@
 package com.alexispell.ecommerce.customer;
 
-import com.alexispell.ecommerce.dto.CustomerRequestDto;
-import com.alexispell.ecommerce.dto.CustomerResponseDto;
+import com.alexispell.ecommerce.customer.dto.CustomerRequestDto;
+import com.alexispell.ecommerce.customer.dto.CustomerResponseDto;
 import org.springframework.stereotype.Service;
 
 @Service

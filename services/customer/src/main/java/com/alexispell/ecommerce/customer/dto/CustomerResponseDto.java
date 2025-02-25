@@ -1,4 +1,4 @@
-package com.alexispell.ecommerce.dto;
+package com.alexispell.ecommerce.customer.dto;
 
 
 import com.alexispell.ecommerce.customer.Address;

@@ -1,8 +1,8 @@
 package com.alexispell.ecommerce.customer;
 
-import com.alexispell.ecommerce.dto.CustomerRequestDto;
-import com.alexispell.ecommerce.dto.CustomerResponseDto;
-import com.alexispell.ecommerce.dto.UpdateCustomerRequestDto;
+import com.alexispell.ecommerce.customer.dto.CustomerRequestDto;
+import com.alexispell.ecommerce.customer.dto.CustomerResponseDto;
+import com.alexispell.ecommerce.customer.dto.UpdateCustomerRequestDto;
 import com.alexispell.ecommerce.exception.CustomerNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

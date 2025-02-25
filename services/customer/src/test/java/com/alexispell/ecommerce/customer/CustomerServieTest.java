@@ -1,8 +1,6 @@
 package com.alexispell.ecommerce.customer;
 
-import com.alexispell.ecommerce.dto.CustomerRequestDto;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
+import com.alexispell.ecommerce.customer.dto.CustomerRequestDto;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
