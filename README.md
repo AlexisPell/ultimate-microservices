@@ -35,3 +35,5 @@
 - 8761: Eureka server
 - 8090: Customer service
 - 8050: Product service
+- 8070: Order service
+- 8060: Payment service
