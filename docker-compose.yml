@@ -1,10 +1,123 @@
 name: my_ultimate_microservices
 
 services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper
+      - zookeeper_log:/var/log/zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - microservices-net
+
+  kafka-1:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-1
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka-1:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+#    volumes:
+#      - kafka1_data:/var/lib/kafka/data
+    networks:
+      - microservices-net
+
+  kafka-2:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-2
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka-2:29093,PLAINTEXT_HOST://localhost:9093"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+#    volumes:
+#      - kafka2_data:/var/lib/kafka/data
+    networks:
+      - microservices-net
+
+  kafka-3:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-3
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka-3:29094,PLAINTEXT_HOST://localhost:9094"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+#    volumes:
+#      - kafka3_data:/var/lib/kafka/data
+    networks:
+      - microservices-net
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:latest
+    container_name: schema-registry
+    restart: always
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "kafka-1:29092,kafka-2:29093,kafka-3:29094"
+      SCHEMA_REGISTRY_HOST_NAME: "schema-registry"
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+      SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
+      SCHEMA_REGISTRY_DEBUG: 'true'
+    networks:
+      - microservices-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: always
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - schema-registry
+    ports:
+      - "8000:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: "kafka-1:29092,kafka-2:29093,kafka-3:29094"
+      KAFKA_CLUSTERS_0_SCHEMA_REGISTRY: "http://schema-registry:8081"
+    networks:
+      - microservices-net
+
   lgtm:
     image: grafana/otel-lgtm:latest
     container_name: lgtm
-    restart: unless-stopped
+    restart: always
     ports:
       # Grafana v11.5.2
       # Prometheus v3.2.0
@@ -23,7 +136,7 @@ services:
     volumes:
       - lgtm_data:/var/lib/grafana
     networks:
-      microservices-net:
+      - microservices-net
 
   mongo:
     container_name: my_mongo
@@ -35,7 +148,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: user
       MONGO_INITDB_ROOT_PASSWORD: password
-
+    networks:
+      - microservices-net
 
   mail-dev:
     container_name: my_mail_dev
@@ -43,12 +157,13 @@ services:
     ports:
       - 1080:1080
       - 1025:1025
+    networks:
+      - microservices-net
 
   postgres:
     image: postgres:16.3
     container_name: my_postgres
     environment:
-#      POSTGRES_DB: db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     volumes:
@@ -56,33 +171,8 @@ services:
     ports:
       - 5432:5432
     networks:
-      microservices-net:
+      - microservices-net
     restart: unless-stopped
-
-#  mongo-express:
-#    container_name: my_mongo_express
-#    image: mongo-express
-#    restart: on-failure
-#    ports:
-#      - 8081:8081
-#    environment:
-#      ME_CONFIG_MONGODB_AUTH_USERNAME: user
-#      ME_CONFIG_MONGODB_AUTH_PASSWORD: password
-
-#  pg_admin:
-#    container_name: my_pg_admin
-#    image: dpage/pgadmin4
-#    environment:
-#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin@pgadmin.org}
-#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-#      PGADMIN_CONFIG_SERVER_MODE: 'False'
-#    volumes:
-#      - my_pgadmin_volume:/var/lib/pgadmin
-#    ports:
-#      - 5050:80
-#    networks:
-#      microservices-net:
-#    restart: unless-stopped
 
 networks:
   microservices-net:
@@ -91,6 +181,11 @@ networks:
 volumes:
   lgtm_data:
   my_pg_volume:
-  my_pgadmin_volume:
   my_mongo_volume:
+  zookeeper_data:
+  zookeeper_log:
+#  kafka1_data:
+#  kafka2_data:
+#  kafka3_data:
+
 

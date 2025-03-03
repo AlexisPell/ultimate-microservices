@@ -3,7 +3,7 @@ package com.alexispell.ecommerce.orderLine;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public record OrderLineRequest(
+public record OrderLineRequestDto(
         Integer id,
         @NotNull(message = "orderId is mandatory")
         Integer orderId,

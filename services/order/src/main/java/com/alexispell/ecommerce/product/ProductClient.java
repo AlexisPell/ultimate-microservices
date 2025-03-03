@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
+// OBSOLETE APPROACH
 @Service
 @RequiredArgsConstructor
 public class ProductClient {

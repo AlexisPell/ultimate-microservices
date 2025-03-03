@@ -1,8 +1,8 @@
 spring:
   application:
-    name: order-service
+    name: payment-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/order
+    url: jdbc:postgresql://localhost:5432/payment
     username: user
     password: password
     driver-class-name: org.postgresql.Driver
@@ -18,12 +18,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.type.mapping: orderConfirmation:com.alexispell.ecommerce.kafka.OrderConfirmationDto
-server:
-  port: 8070
+        spring.json.type.mapping: sendPaymentCompletedNotification:com.alexispell.ecommerce.kafka.PaymentNotificationRequestDto
 
-application:
-  config:
-    customer-url: http://localhost:8090/api/v1/customers
-    payment-url: http://localhost:8060/api/v1/payments
-    product-url: http://localhost:8050/api/v1/products
+server:
+  port: 8060

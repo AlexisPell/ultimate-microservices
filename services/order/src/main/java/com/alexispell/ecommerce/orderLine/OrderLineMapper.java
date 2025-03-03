@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderLineMapper {
 
-    public OrderLine toOrderLine(OrderLineRequest res) {
+    public OrderLine toOrderLine(OrderLineRequestDto res) {
         return OrderLine
                 .builder()
                 .id(res.orderId())
@@ -17,5 +17,13 @@ public class OrderLineMapper {
                         .build())
                 .productId(res.productId())
                 .build();
+    }
+
+    public OrderLineResponseDto toOrderLineResponseDto(OrderLine orderLine) {
+        return new OrderLineResponseDto(
+                orderLine.getId(),
+                orderLine.getProductId(),
+                orderLine.getQuantity()
+        );
     }
 }

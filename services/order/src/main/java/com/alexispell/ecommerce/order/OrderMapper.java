@@ -24,4 +24,14 @@ public class OrderMapper {
                 .customerId(dto.customerId())
                 .build();
     }
+
+    public OrderResponseDto fromOrder(Order order) {
+        return new OrderResponseDto(
+                order.getId(),
+                order.getReference(),
+                order.getTotalAmount(),
+                order.getPaymentMethod(),
+                order.getCustomerId()
+        );
+    }
 }

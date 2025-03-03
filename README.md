@@ -30,9 +30,13 @@
   (these 2 will be removed when k8s will be onboarded)
 
 
-<h3>Service ports:</h3>
+<h3>Server ports:</h3>
+- 3000: Grafana UI
+- 8000: Kafka UI
+- 8081: Schema registry
 - 8888: Config server
 - 8761: Eureka server
+  </br>
 - 8090: Customer service
 - 8050: Product service
 - 8070: Order service
