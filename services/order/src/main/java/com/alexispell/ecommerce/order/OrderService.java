@@ -7,6 +7,7 @@ import com.alexispell.ecommerce.kafka.OrderConfirmationDto;
 import com.alexispell.ecommerce.kafka.OrderProducer;
 import com.alexispell.ecommerce.orderLine.OrderLineRequestDto;
 import com.alexispell.ecommerce.orderLine.OrderLineService;
+import com.alexispell.ecommerce.orderLine.SaveOrderLineDto;
 import com.alexispell.ecommerce.payment.PaymentClient;
 import com.alexispell.ecommerce.payment.PaymentRequestDto;
 import com.alexispell.ecommerce.product.ProductClient;
@@ -15,9 +16,12 @@ import com.alexispell.ecommerce.product.PurchaseResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,31 +36,36 @@ public class OrderService {
     private final ProductClient productClient;
     private final PaymentClient paymentClient;
 
+    @Transactional
     public Integer createOrder(OrderRequestDto reqDto) {
         // check the customer existance -> customer-service (via OpenFeign)
+        System.out.println("Create Order payload:: " + reqDto.toString());
         CustomerResponseDto customer = customerClient.findCustomerById(reqDto.customerId())
                 .orElseThrow(() -> new BusinessException(String.format("Cannot create order. No customer exists with id %s", reqDto.customerId())));
 
+        System.out.println("Customer from db ::" + customer.toString());
         // purchase the product -> product-service (via RestTemplate)
-        // TODO: This is not okay. May cause parallel calls and is not concurrent-safety.
+        // TODO: This is not okay. May corrupt data on errors w/o transactions but idk in pet project
         List<PurchaseResponse> products = productClient.purchaseProducts(reqDto.products());
 
+        System.out.println("Response with products::" + products.toString());
         // persist order (without orderLines)
         var order = orderRepository.save(orderMapper.toOrder(reqDto));
 
+        System.out.println("Saved order:: " + order.toString());
+
         // persist orderLines for order
+        var orderLinesDtos = new ArrayList<SaveOrderLineDto>();
         for (PurchaseRequest purchaseRequest: reqDto.products()) {
-            // TODO: bad practice - it takes exclusive pool connection to db for each save
-            // Must be reworked to saveAll but let it be
-            orderLineService.saveOrderLine(
-                    new OrderLineRequestDto(
-                            null, // orderLineId
-                            order.getId(),
-                            purchaseRequest.productId(),
-                            purchaseRequest.quantity()
-                    )
-            );
+            orderLinesDtos.add(new SaveOrderLineDto(
+                    order.getId(),
+                    purchaseRequest.productId(),
+                    purchaseRequest.quantity()
+            ));
         }
+        orderLineService.saveAllOrderLines(orderLinesDtos);
+
+        System.out.println("Saved order lines:: " + orderLinesDtos.toString());
 
         // start payment process
         var paymentRequest = new PaymentRequestDto(
@@ -66,7 +75,8 @@ public class OrderService {
                 order.getReference(),
                 customer
         );
-        paymentClient.requestOrderPayment(paymentRequest);
+        var paymentId = paymentClient.requestOrderPayment(paymentRequest);
+        System.out.println("Payment Id::" + paymentId);
 
         // send the order confirmation to notification service
         orderProducer.orderConfirmation(

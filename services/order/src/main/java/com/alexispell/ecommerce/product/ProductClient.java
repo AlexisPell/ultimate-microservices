@@ -25,9 +25,11 @@ public class ProductClient {
         HttpEntity<List<PurchaseRequest>> request = new HttpEntity<>(requestBody, headers);
         var responseType = new ParameterizedTypeReference<List<PurchaseResponse>>() {};
 
+        var purchaseProductUrl = productUrl + "/purchase";
+
         ResponseEntity<List<PurchaseResponse>> responseEntity =
                 restTemplate
-                        .exchange(productUrl, HttpMethod.POST, request, responseType);
+                        .exchange(purchaseProductUrl, HttpMethod.POST, request, responseType);
 
         if (responseEntity.getStatusCode().isError()) {
             throw new BusinessException("An error occured while processing the product purchase");

@@ -21,4 +21,8 @@ public class OrderLine {
     // Linked from external service
     private Integer productId;
     private double quantity;
+
+    @Version
+    @Column(nullable = false)
+    private Integer version = 0; // Оптимистичная блокировка
 }

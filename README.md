@@ -41,3 +41,4 @@
 - 8050: Product service
 - 8070: Order service
 - 8060: Payment service
+- 8040: Notification service

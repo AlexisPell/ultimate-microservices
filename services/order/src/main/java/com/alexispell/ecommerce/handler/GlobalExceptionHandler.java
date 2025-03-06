@@ -18,17 +18,17 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<String> handle(BusinessException e) {
+    public ResponseEntity<ErrorResponse> handle(BusinessException e) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
+                .body(new ErrorResponse(Map.of("error", e.getMessage())));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handle(EntityNotFoundException e) {
+    public ResponseEntity<ErrorResponse> handle(EntityNotFoundException e) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+                .body(new ErrorResponse(Map.of("error", e.getMessage())));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
