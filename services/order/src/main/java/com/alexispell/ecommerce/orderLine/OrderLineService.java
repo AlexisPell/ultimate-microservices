@@ -38,7 +38,7 @@ public class OrderLineService {
                     .collect(Collectors.toList());
 
         } catch (ObjectOptimisticLockingFailureException e) {
-            log.info("ERROR INFO::: " + e.toString());
+            log.info("ERROR:: " + e.toString());
             throw new BusinessException("Optimistic locking failure: Order line was modified concurrently::" + e.getMessage());
         } catch (DataAccessException e) {
             throw new BusinessException("Database error occurred while saving order lines:: " + e.getMessage());

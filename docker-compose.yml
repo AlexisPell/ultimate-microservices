@@ -114,29 +114,72 @@ services:
     networks:
       - microservices-net
 
-  lgtm:
-    image: grafana/otel-lgtm:latest
-    container_name: lgtm
+#  lgtm:
+#    image: grafana/otel-lgtm:latest
+#    container_name: lgtm
+#    restart: always
+#    ports:
+#      # Grafana v11.5.2
+#      # Prometheus v3.2.0
+#      # OpenTelemetry Collector v0.120.0
+#      # Tempo v2.7.1
+#      # Loki v3.4.2
+#      - "3000:3000"   # Grafana UI
+#      - "4317:4317"   # OpenTelemetry gRPC receiver
+#      - "4318:4318"   # OpenTelemetry HTTP receiver
+#      - "9090:9090"   # Mimir (Prometheus-compatible API)
+#      - "3100:3100"   # Loki (logs API)
+#      - "3200:3200"   # Tempo (tracing API)
+#    environment:
+#      - "GF_SECURITY_ADMIN_PASSWORD=admin"
+#      - "OTEL_RESOURCE_ATTRIBUTES=service.name=otel-lgtm"
+#    volumes:
+#      - lgtm_data:/var/lib/grafana
+#      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml
+#    networks:
+#      - microservices-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
     restart: always
     ports:
-      # Grafana v11.5.2
-      # Prometheus v3.2.0
-      # OpenTelemetry Collector v0.120.0
-      # Tempo v2.7.1
-      # Loki v3.4.2
-      - "3000:3000"   # Grafana UI
-      - "4317:4317"   # OpenTelemetry gRPC receiver
-      - "4318:4318"   # OpenTelemetry HTTP receiver
-      - "9090:9090"   # Mimir (Prometheus-compatible API)
-      - "3100:3100"   # Loki (logs API)
-      - "3200:3200"   # Tempo (tracing API)
+      - "3000:3000"
     environment:
-      - "GF_SECURITY_ADMIN_PASSWORD=admin"
-      - "OTEL_RESOURCE_ATTRIBUTES=service.name=otel-lgtm"
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
-      - lgtm_data:/var/lib/grafana
-    networks:
-      - microservices-net
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: always
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./infra/loki-config.yml:/etc/loki/local-config.yaml
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    restart: always
+    ports:
+      - "3200:3200"
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./infra/tempo-config.yml:/etc/tempo.yaml
 
   mongo:
     container_name: my_mongo
@@ -174,18 +217,27 @@ services:
       - microservices-net
     restart: unless-stopped
 
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+    networks:
+      - microservices-net
+
+
 networks:
   microservices-net:
     driver: bridge
 
 volumes:
-  lgtm_data:
   my_pg_volume:
   my_mongo_volume:
   zookeeper_data:
   zookeeper_log:
+  grafana-data:
 #  kafka1_data:
 #  kafka2_data:
 #  kafka3_data:
+#  lgtm_data:
 
 

@@ -42,3 +42,9 @@
 - 8070: Order service
 - 8060: Payment service
 - 8040: Notification service
+
+
+localhost:8222/actuator/prometheus - gateway logs
+Prometheus:
+localhost:9090/targets - active targets
+localhost:9090/config - active config
