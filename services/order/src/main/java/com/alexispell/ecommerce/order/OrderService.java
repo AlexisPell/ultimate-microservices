@@ -45,16 +45,13 @@ public class OrderService {
         CustomerResponseDto customer = customerClient.findCustomerById(reqDto.customerId())
                 .orElseThrow(() -> new BusinessException(String.format("Cannot create order. No customer exists with id %s", reqDto.customerId())));
 
-        System.out.println("Customer from db ::" + customer.toString());
         // purchase the product -> product-service (via RestTemplate)
         // TODO: This is not okay. May corrupt data on errors w/o transactions but idk in pet project
         List<PurchaseResponse> products = productClient.purchaseProducts(reqDto.products());
 
-        System.out.println("Response with products::" + products.toString());
         // persist order (without orderLines)
         var order = orderRepository.save(orderMapper.toOrder(reqDto));
 
-        System.out.println("Saved order:: " + order.toString());
 
         // persist orderLines for order
         var orderLinesDtos = new ArrayList<SaveOrderLineDto>();
@@ -65,9 +62,8 @@ public class OrderService {
                     purchaseRequest.quantity()
             ));
         }
-        orderLineService.saveAllOrderLines(orderLinesDtos);
+//        orderLineService.saveAllOrderLines(orderLinesDtos);
 
-        System.out.println("Saved order lines:: " + orderLinesDtos.toString());
 
         // start payment process
         var paymentRequest = new PaymentRequestDto(
@@ -78,7 +74,6 @@ public class OrderService {
                 customer
         );
         var paymentId = paymentClient.requestOrderPayment(paymentRequest);
-        System.out.println("Payment Id::" + paymentId);
 
         // send the order confirmation to notification service
         orderProducer.orderConfirmation(

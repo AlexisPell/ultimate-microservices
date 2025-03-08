@@ -114,31 +114,6 @@ services:
     networks:
       - microservices-net
 
-#  lgtm:
-#    image: grafana/otel-lgtm:latest
-#    container_name: lgtm
-#    restart: always
-#    ports:
-#      # Grafana v11.5.2
-#      # Prometheus v3.2.0
-#      # OpenTelemetry Collector v0.120.0
-#      # Tempo v2.7.1
-#      # Loki v3.4.2
-#      - "3000:3000"   # Grafana UI
-#      - "4317:4317"   # OpenTelemetry gRPC receiver
-#      - "4318:4318"   # OpenTelemetry HTTP receiver
-#      - "9090:9090"   # Mimir (Prometheus-compatible API)
-#      - "3100:3100"   # Loki (logs API)
-#      - "3200:3200"   # Tempo (tracing API)
-#    environment:
-#      - "GF_SECURITY_ADMIN_PASSWORD=admin"
-#      - "OTEL_RESOURCE_ATTRIBUTES=service.name=otel-lgtm"
-#    volumes:
-#      - lgtm_data:/var/lib/grafana
-#      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml
-#    networks:
-#      - microservices-net
-
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -205,7 +180,7 @@ services:
 
   postgres:
     image: postgres:16.3
-    container_name: my_postgres
+    container_name: postgres
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -221,6 +196,27 @@ services:
     image: openzipkin/zipkin
     ports:
       - 9411:9411
+    networks:
+      - microservices-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: my_keycloak
+    restart: always
+    ports:
+      - "8999:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL_HOST=postgres # my_postgres container
+      - KC_DB_URL_DATABASE=keycloak
+      - KC_DB_USERNAME=user
+      - KC_DB_PASSWORD=password
+      - KC_HOSTNAME=localhost
+    command: [ "start-dev" ]
+    depends_on:
+      - postgres
     networks:
       - microservices-net
 

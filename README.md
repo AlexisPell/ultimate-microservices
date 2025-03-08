@@ -36,7 +36,8 @@
 - 8081: Schema registry
 - 8888: Config server
 - 8761: Eureka server
-  </br>
+- 8999: Keycloak
+</br>
 - 8090: Customer service
 - 8050: Product service
 - 8070: Order service
