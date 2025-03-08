@@ -18,7 +18,7 @@ import java.util.UUID;
 @Document
 public class Customer {
     @Id
-    private ObjectId id;
+    private String id;
     private String firstName;
     private String lastName;
     private String email;

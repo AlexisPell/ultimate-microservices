@@ -32,6 +32,7 @@ public class ProductService {
 
     @Transactional(rollbackOn = Exception.class)
     public List<ProductPurchaseResponseDto> purchaseProducts(List<ProductPurchaseRequestDto> requestDtos) {
+        // extract productIds and get all products from db, ordered by id
         var productIds = requestDtos
                 .stream()
                 .map(ProductPurchaseRequestDto::productId)
@@ -42,13 +43,15 @@ public class ProductService {
             throw new ProductPurchaseException("One or more products does not exist");
         }
 
+        // sort requested dtos in order by id to match the storedProducts
         var storedRequestDto = requestDtos
                 .stream()
                 .sorted(Comparator.comparing(ProductPurchaseRequestDto::productId))
                 .toList();
 
+        // Recalculate the new amount after purchasing for DB,
+        // Return the purchased products to client
         var purchasedProducts = new ArrayList<ProductPurchaseResponseDto>();
-
         for (int i = 0; i < storedProducts.size(); i++) {
             var product = storedProducts.get(i);
             var productRequest = storedRequestDto.get(i);
